@@ -1,0 +1,64 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  13                                    |
+|   \\  /    A nd           | Website:  www.openfoam.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+scale   1;
+
+vertices
+(
+    (-5 -5 0)      // 0
+    (10 -5 0)      // 1
+    (10  5 0)      // 2
+    (-5  5 0)      // 3
+    (-5 -5 0.05)   // 4
+    (10 -5 0.05)   // 5
+    (10  5 0.05)   // 6
+    (-5  5 0.05)   // 7
+);
+
+blocks
+(
+    // Mantenemos una resolución base decente (150 en X, 100 en Y, 1 en Z)
+    hex (0 1 2 3 4 5 6 7) (150 100 1) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    inlet
+    {
+        type patch;
+        faces ((0 4 7 3));
+    }
+    outlet
+    {
+        type patch;
+        faces ((1 2 6 5));
+    }
+    topAndBottom
+    {
+        type patch;
+        faces ((3 7 6 2) (0 1 5 4));
+    }
+    frontAndBack
+    {
+        // IMPORTANTE: Lo dejamos en patch para que Snappy no llore. 
+        // Después lo pasamos a empty a mano.
+        type patch; 
+        faces ((4 5 6 7) (0 3 2 1));
+    }
+);

@@ -1,0 +1,65 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  13                                    |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSolution;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+solvers
+{
+    p 
+    {
+        solver          GAMG; 
+        tolerance       1e-06;
+        relTol          0.1;
+        smoother        GaussSeidel;
+    }
+
+    // EL SOLVER FINAL DE PRESIÓN (Obligatorio para PIMPLE)
+    pFinal
+    {
+        solver          GAMG; 
+        tolerance       1e-06;
+        relTol          0;           // Tolerancia relativa CERO en la última vuelta
+        smoother        GaussSeidel;
+    }
+
+    "(U|k|omega)"
+    {
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-06;
+        relTol          0.1;
+    }
+
+    // EL SOLVER FINAL DE VELOCIDAD Y TURBULENCIA
+    "(U|k|omega)Final"
+    {
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-06;
+        relTol          0;           // Tolerancia relativa CERO en la última vuelta
+    }
+}
+
+PIMPLE
+{
+    nOuterCorrectors 2;      // Vueltas externas (crucial para estabilizar vórtices)
+    nCorrectors      2;      // Vueltas internas para acoplar presión y velocidad
+    nNonOrthogonalCorrectors 0; // Dejalo en 0 si tu malla es buena (con snappy lo suele ser)
+    
+    // En aerodinámica externa con un outlet abierto, no se necesita pRefCell.
+    // pRefCell        0;
+    // pRefValue       0;
+}
+
+// ************************************************************************* //

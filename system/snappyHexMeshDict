@@ -1,0 +1,135 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  13                                    |
+|   \\  /    A nd           | Website:  www.openfoam.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    object      snappyHexMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+castellatedMesh true;
+snap            true;
+addLayers       true;
+
+geometry
+{
+    perfil
+    {
+        type triSurfaceMesh;
+        file "NACA2412.stl";
+    }
+    
+    cajaEstela
+    {
+        // ACÁ VAN LAS COORDENADAS NUEVAS DE LA CAJA
+        type searchableBox;
+        min (-0.5 -1.0 -0.1);
+        max ( 4.0  1.0  0.2);
+    }
+}
+
+castellatedMeshControls
+{
+    maxLocalCells 100000;
+    maxGlobalCells 5000000;
+    minRefinementCells 10;
+    maxLoadUnbalance 0.10;
+    nCellsBetweenLevels 3; // Suaviza la transición de la malla
+
+    features (); 
+
+    refinementSurfaces
+    {
+        perfil
+        {
+            level (6 7); // Más resolución en la curvatura
+            patchInfo
+            {
+                type wall;
+                inGroups (perfil);
+            }
+        }
+    }
+
+    resolveFeatureAngle 30;
+
+    refinementRegions
+    {
+        cajaEstela
+        {
+            // ACÁ VA EL NIVEL DE REFINAMIENTO, NO LAS COORDENADAS
+            mode inside;
+            levels ((1.0 4));
+        }
+    }
+
+    // PUNTO DE REFERENCIA CORREGIDO PARA EL TÚNEL GRANDE
+    locationInMesh (-4 0 0.025); 
+    allowFreeStandingZoneFaces false;
+}
+
+snapControls
+{
+    nSmoothPatch 3;
+    tolerance 2.0;
+    nSolveIter 30;
+    nRelaxIter 5;
+    nFeatureSnapIter 10;
+}
+
+addLayersControls
+{
+    relativeSizes false;
+    
+    layers
+    {
+        "perfil"
+        {
+            nSurfaceLayers 10; // Más prismas para mejor y+
+        }
+    }
+
+    expansionRatio 1.2;
+    firstLayerThickness 5.3e-06; 
+    minThickness 1e-06;
+
+    nGrow 0;
+    featureAngle 130; 
+    
+    nRelaxIter 5; 
+    
+    nSmoothSurfaceNormals 1;
+    nSmoothNormals 3;
+    nSmoothThickness 10;
+    maxFaceThicknessRatio 0.5;
+    maxThicknessToMedialRatio 0.3; // El que a vos te funciona en OF13
+    minMedianAxisAngle 90;         // El que a vos te funciona en OF13
+    nBufferCellsNoExtrude 0;
+    nLayerIter 50;
+}
+
+meshQualityControls
+{
+    maxNonOrtho 65;
+    maxBoundarySkewness 20;
+    maxInternalSkewness 4;
+    maxConcave 80;
+    minVol 1e-13;
+    minTetQuality 1e-30;
+    minArea -1;
+    minTwist 0.05;
+    minDeterminant 0.001;
+    minFaceWeight 0.05;
+    minVolRatio 0.01;
+    triangleTwist true;
+    nSmoothScale 4;
+    errorReduction 0.75;
+}
+
+mergeTolerance 1e-6;
